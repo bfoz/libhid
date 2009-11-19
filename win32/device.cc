@@ -128,7 +128,11 @@ bool HID::win32::device_type::open(OpenMode mode)
     if( mode & WriteMode )
 	m |= GENERIC_WRITE;
 
-    handle = CreateFile(_tpath.c_str(), m, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+    overlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    overlapped.Offset = 0;
+    overlapped.OffsetHigh = 0;
+
+    handle = CreateFile(_tpath.c_str(), m, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
 
     if( INVALID_HANDLE_VALUE == handle )
 	return false;
@@ -136,21 +140,49 @@ bool HID::win32::device_type::open(OpenMode mode)
     return true;
 }
 
+// Use overlapped IO here to prevent report functions from blocking while
+//  waiting for interrupt reports. But read() is expected to block, so wrap the
+//  overlapped IO in a while loop, and stay there until a report is received.
 bool HID::win32::device_type::read(buffer_type& buffer)
 {
     if( INVALID_HANDLE_VALUE == handle )
 	return false;
 
-    DWORD num = 0;
     const size_t length = capabilities()->InputReportByteLength;
     uint8_t* b = bufferInputReport();
 
-    if( !ReadFile(handle, b, length, &num, NULL) )
-	return false;
+    DWORD num = 0;
+    const size_t time = 100;
+    bool run = true;
+    while(run)
+    {
+	ReadFile(handle, b, length, NULL, &overlapped);
+	switch( WaitForSingleObject(overlapped.hEvent, time) )
+	{
+	    case WAIT_OBJECT_0:
+		GetOverlappedResult(handle, &overlapped, &num, 0);
+		run = false;
+		break;
+	    case WAIT_TIMEOUT:
+		CancelIo(handle);
+		break;
+	    default:
+		run = false;
+		CancelIo(handle);
+		break;
+	}
+    }
 
-    buffer.reserve(num);
-    buffer.assign(b, b+num);
-    return true;
+    if( num )
+    {
+	buffer.reserve(num);
+	buffer.assign(b, b+num);
+	return true;
+    }
+    else
+	buffer.clear();
+
+    return false;
 }
 
 bool HID::win32::device_type::write(const buffer_type& buffer)

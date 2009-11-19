@@ -41,6 +41,7 @@ class HID::win32::device_type : public HID::device_type
     const tstring _tpath;
     HANDLE	handle;
     HIDD_ATTRIBUTES	_attributes;
+    OVERLAPPED		overlapped;
     PHIDP_PREPARSED_DATA    _preparsedData;
     HIDP_CAPS*	_capabilities;
 
