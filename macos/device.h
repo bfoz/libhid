@@ -5,11 +5,7 @@
 
 #include <device.h>
 
-#define	MAC_OS_X_VERSION_MIN_REQUIRED	MAC_OS_X_VERSION_10_5
-
-#include <IOKit/hid/IOHIDManager.h>
-#include <IOKit/hid/IOHIDLib.h>
-#include <IOKit/hid/IOHIDKeys.h>
+#include "common.h"
 
 namespace HID
 {
