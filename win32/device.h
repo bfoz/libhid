@@ -81,6 +81,13 @@ public:
     virtual buffer_type feature(unsigned reportID);
     virtual buffer_type input(unsigned reportID);
     virtual bool output(unsigned reportID, buffer_type&);
+
+    // Getters
+    uint16_t productID() { return attributes().ProductID; }
+    uint16_t usage();
+    uint16_t usagePage();
+    uint16_t vendorID()  { return attributes().VendorID; }
+    uint16_t versionNumber() { return attributes().VersionNumber; }
 };
 
 #endif	// HID_WIN32_DEVICE_H

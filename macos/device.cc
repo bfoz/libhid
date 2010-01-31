@@ -2,6 +2,7 @@
 #include <cstdio>
 
 #include "device.h"
+#include "util.h"
 
 void HID::macos::device_type::close()
 {
@@ -118,4 +119,20 @@ bool HID::macos::device_type::output(unsigned reportID, buffer_type& report)
 	return false;
     std::copy(report.begin(), report.end(), _bufferOutput);
     return IOHIDDeviceSetReport(handle, kIOHIDReportTypeOutput, reportID, _bufferOutput, _lengthOutputBuffer) == kIOReturnSuccess;
+}
+
+uint16_t HID::macos::device_type::usage()
+{
+    long value = 0;
+    if( !getProperty(handle, CFSTR(kIOHIDDeviceUsageKey), &value) || !value )
+	getProperty(handle, CFSTR(kIOHIDPrimaryUsageKey), &value);
+    return value;
+}
+
+uint16_t HID::macos::device_type::usagePage()
+{
+    long value = 0;
+    if( !getProperty(handle, CFSTR(kIOHIDDeviceUsagePageKey), &value) || !value )
+	getProperty(handle, CFSTR(kIOHIDPrimaryUsagePageKey), &value);
+    return value;
 }

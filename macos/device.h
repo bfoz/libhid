@@ -43,6 +43,13 @@ public:
     virtual buffer_type feature(unsigned reportID);
     virtual buffer_type input(unsigned reportID);
     virtual bool output(unsigned reportID, buffer_type&);
+
+    // Getters
+    uint16_t productID() { return getProductID(handle); }
+    uint16_t usage();
+    uint16_t usagePage();
+    uint16_t vendorID()  { return getVendorID(handle); }
+    uint16_t versionNumber() { return getVersionNumber(handle); }
 };
 
 #endif	// HID_MACOS_DEVICE_H

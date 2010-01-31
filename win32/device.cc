@@ -189,3 +189,17 @@ bool HID::win32::device_type::output(unsigned reportID, buffer_type& report)
 
     return HidD_SetOutputReport(handle, b, length);
 }
+
+uint16_t HID::win32::device_type::usage()
+{
+    if( !capabilities() )
+	return 0;
+    return capabilities()->Usage;
+}
+
+uint16_t HID::win32::device_type::usagePage()
+{
+    if( !capabilities() )
+	return 0;
+    return capabilities()->UsagePage;
+}

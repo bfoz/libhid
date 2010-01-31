@@ -37,6 +37,8 @@ namespace HID
 	// Getters
 	const std::string& path() const { return _path;	}
 	uint16_t productID() const { return _productID;	}
+	virtual uint16_t usage()=0;
+	virtual uint16_t usagePage()=0;
 	uint16_t vendorID()  const { return _vendorID;	}
 	uint16_t versionNumber() const { return _versionNumber;	}
     };
