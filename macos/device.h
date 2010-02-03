@@ -6,6 +6,7 @@
 #include <device.h>
 
 #include "common.h"
+#include "util.h"
 
 namespace HID
 {
@@ -27,7 +28,7 @@ class HID::macos::device_type : public HID::device_type
     uint8_t*	_bufferOutput;    
 
 public:
-    device_type(IOHIDDeviceRef d, uint16_t pid, uint16_t vid, uint16_t vn) : HID::device_type("", pid, vid, vn), handle(d), _bufferFeature(0), _bufferInput(0), _bufferOutput(0) {}
+    device_type(IOHIDDeviceRef d) : HID::device_type(""), handle(d), _bufferFeature(0), _bufferInput(0), _bufferOutput(0) {}
     virtual ~device_type()
     {
 	close();

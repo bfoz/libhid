@@ -42,6 +42,27 @@ uint8_t* HID::win32::device_type::bufferOutputReport()
     return _bufferOutputReport;
 }
 
+const HIDD_ATTRIBUTES& HID::win32::device_type::attributes()
+{
+    bool opened = false;
+
+    if( sizeof(_attributes) == _attributes.Size )
+	return _attributes;
+
+    // Try to open the device if it isn't already open
+    if( (INVALID_HANDLE_VALUE == handle) && !(opened = open(ReadMode)) )
+	return _attributes;
+
+    _attributes.Size = sizeof(_attributes);
+    if( !HidD_GetAttributes(handle, &_attributes) )
+	memset(&_attributes, 0, sizeof(_attributes));
+
+    if( opened )	// Don't leave the device open if it wasn't open before
+	close();
+
+    return _attributes;
+}
+
 HIDP_CAPS* HID::win32::device_type::capabilities()
 {
     if( !_capabilities )
@@ -73,10 +94,18 @@ PHIDP_PREPARSED_DATA HID::win32::device_type::preparsedData()
     return _preparsedData;
 }
 
-HID::win32::device_type::device_type(const TCHAR* p, const HIDD_ATTRIBUTES& attributes) :
-	    HID::device_type(stringFromTCHAR(p), attributes.ProductID, attributes.VendorID,
-	    attributes.VersionNumber), _tpath(p), handle(INVALID_HANDLE_VALUE),
-	    _preparsedData(NULL), _capabilities(NULL), _bufferFeatureReport(NULL),
+HID::win32::device_type::device_type(const TCHAR* p) :
+	    HID::device_type(stringFromTCHAR(p)), _tpath(p),
+	    handle(INVALID_HANDLE_VALUE), _preparsedData(NULL),
+	    _capabilities(NULL), _bufferFeatureReport(NULL),
+	    _bufferInputReport(NULL), _bufferOutputReport(NULL)
+{
+    _attributes.Size = 0;
+}
+
+HID::win32::device_type::device_type(const TCHAR* p, const HIDD_ATTRIBUTES& _attr) :
+	    HID::device_type(stringFromTCHAR(p)), _tpath(p), handle(INVALID_HANDLE_VALUE),
+	    _attributes(_attr), _preparsedData(NULL), _capabilities(NULL), _bufferFeatureReport(NULL),
 	    _bufferInputReport(NULL), _bufferOutputReport(NULL) {}
 
 void HID::win32::device_type::close()

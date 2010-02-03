@@ -40,6 +40,7 @@ class HID::win32::device_type : public HID::device_type
 {
     const tstring _tpath;
     HANDLE	handle;
+    HIDD_ATTRIBUTES	_attributes;
     PHIDP_PREPARSED_DATA    _preparsedData;
     HIDP_CAPS*	_capabilities;
 
@@ -51,10 +52,12 @@ class HID::win32::device_type : public HID::device_type
     uint8_t*	bufferFeatureReport();
     uint8_t*	bufferInputReport();
     uint8_t*	bufferOutputReport();
+    const HIDD_ATTRIBUTES& attributes();
     HIDP_CAPS*	capabilities();
     PHIDP_PREPARSED_DATA preparsedData();
 
 public:
+    device_type(const TCHAR*);
     device_type(const TCHAR*, const HIDD_ATTRIBUTES&);
     virtual ~device_type()
     {

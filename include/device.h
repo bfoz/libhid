@@ -15,12 +15,9 @@ namespace HID
     class device_type
     {
 	const std::string _path;
-	const uint16_t _productID;
-	const uint16_t _vendorID;
-	const uint16_t _versionNumber;
 
     public:
-	device_type(const std::string& path, uint16_t pid, uint16_t vid, uint16_t vn) : _path(path), _productID(pid), _vendorID(vid), _versionNumber(vn) {}
+	device_type(const std::string& path) : _path(path) {}
 	virtual ~device_type() {}
 
 	virtual void close()=0;
@@ -36,11 +33,11 @@ namespace HID
 
 	// Getters
 	const std::string& path() const { return _path;	}
-	uint16_t productID() const { return _productID;	}
+	virtual uint16_t productID()=0;
 	virtual uint16_t usage()=0;
 	virtual uint16_t usagePage()=0;
-	uint16_t vendorID()  const { return _vendorID;	}
-	uint16_t versionNumber() const { return _versionNumber;	}
+	virtual uint16_t vendorID()=0;
+	virtual uint16_t versionNumber()=0;
     };
 }
 
