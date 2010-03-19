@@ -17,6 +17,7 @@ macx {
 win32 {
     DDK_TARGET = w2k
     DEPENDPATH += $$PWD/win32
+    HEADERS += $$PWD/win32/auto_free.h
     LIBS += -lhid -lsetupapi
     # Want Win2K or later
     DEFINES += WINVER=0x0500
