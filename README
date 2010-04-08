@@ -21,7 +21,7 @@ Linking
 Qt / qmake
 ----------
 
-Simply include libhid.pri in your project's .pro file. quake will take care of the rest.
+Simply include libhid.pri in your project's .pro file. qmake will take care of the rest.
 
 Example
 =======
