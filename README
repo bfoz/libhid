@@ -1,0 +1,24 @@
+Introduction
+============
+
+libhid is a cross-platform C++ library for interacting with [USB Human Interface Devices](http://en.wikipedia.org/wiki/USB_human_interface_device_class).
+
+Installation
+============
+
+git submodule
+-------------
+
+To use libhid as a submodule in your project's git repository:
+
+   git add submodule git://github.com/bfoz/libhid.git *path*
+
+where *path* is the path to put the submodule (relative to your repository root). Then follow the instructions below for linking the library into your project.
+
+Linking
+=======
+
+Qt / qmake
+----------
+
+Simply include libhid.pri in your project's .pro file. quake will take care of the rest.
