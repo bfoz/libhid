@@ -22,3 +22,22 @@ Qt / qmake
 ----------
 
 Simply include libhid.pri in your project's .pro file. quake will take care of the rest.
+
+Example
+=======
+
+Here is a simple example that finds a device by it's Product ID and Vendor ID, opens the device, and then sends a simple output report.
+
+	#include <hid.h>
+
+	HID::filter:And filters;
+	filters.push_back(new VendorID(VENDOR_ID));
+	filters.push_back(new ProductID(PRODUCT_ID));
+
+	HID::device_list devices = HID:find(&filters);
+	if( devices.size() )
+	{
+	    HID::device_type& device = devices.front();
+	    HID::buffer_type buffer;
+	    device.output(REPORT_ID, buffer);
+	}
