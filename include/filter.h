@@ -16,6 +16,7 @@ namespace HID
 	class usagePage;
 	class vendorID;
 
+	class gamepad;		// Game Pad usage in Generic Desktop page
 	class joystick;		// Joystick usage in Generic Desktop page
     }
     class filter_type;
@@ -132,6 +133,16 @@ public:
     bool accept(device_type& device)
     {
 	return vid == device.vendorID();
+    }
+};
+
+// Filter for Game Pad usage in the Generic Desktop usage page
+class HID::filter::gamepad : public filter_type
+{
+public:
+    bool accept(device_type& device)
+    {
+	return (1 == device.usagePage()) && (5 == device.usage());
     }
 };
 
