@@ -87,6 +87,8 @@ public:
     virtual bool output(unsigned reportID, buffer_type&);
 
     // Getters
+    const std::string& manufacturer();
+    const std::string& product();
     uint16_t productID() { return attributes().ProductID; }
     uint16_t usage();
     uint16_t usagePage();

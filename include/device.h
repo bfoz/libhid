@@ -16,6 +16,10 @@ namespace HID
     {
 	const std::string _path;
 
+    protected:
+	std::string	_manufacturer;
+	std::string	_product;
+
     public:
 	device_type(const std::string& path) : _path(path) {}
 	virtual ~device_type() {}
@@ -32,7 +36,9 @@ namespace HID
 	virtual bool output(unsigned reportID, buffer_type&)=0;
 
 	// Getters
+	virtual const std::string& manufacturer()=0;
 	const std::string& path() const { return _path;	}
+	virtual const std::string& product()=0;
 	virtual uint16_t productID()=0;
 	virtual uint16_t usage()=0;
 	virtual uint16_t usagePage()=0;

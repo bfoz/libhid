@@ -121,6 +121,54 @@ bool HID::macos::device_type::output(unsigned reportID, buffer_type& report)
     return IOHIDDeviceSetReport(handle, kIOHIDReportTypeOutput, reportID, _bufferOutput, _lengthOutputBuffer) == kIOReturnSuccess;
 }
 
+const std::string& HID::macos::device_type::manufacturer()
+{
+    if( (_manufacturer.size()==0) && handle )
+    {
+	CFStringRef n = (CFStringRef)IOHIDDeviceGetProperty(handle, CFSTR(kIOHIDManufacturerKey));
+	if( n )
+	{
+	    const char* s = CFStringGetCStringPtr(n, kCFStringEncodingASCII);
+	    if( s )
+		_manufacturer.assign(s);
+	    else
+	    {
+		const size_t size = CFStringGetLength(n)+1;
+		s = new char[size];
+		CFStringGetCString(n, (char*)s, size, kCFStringEncodingASCII);
+		_manufacturer.assign(s);
+		delete[] s;
+	    }
+	}
+    }
+
+    return _manufacturer;
+}
+
+const std::string& HID::macos::device_type::product()
+{
+    if( (_product.size()==0) && handle )
+    {
+	CFStringRef n = (CFStringRef)IOHIDDeviceGetProperty(handle, CFSTR(kIOHIDProductKey));
+	if( n )
+	{
+	    const char* s = CFStringGetCStringPtr(n, kCFStringEncodingASCII);
+	    if( s )
+		_product.assign(s);
+	    else
+	    {
+		const size_t size = CFStringGetLength(n)+1;
+		s = new char[size];
+		CFStringGetCString(n, (char*)s, size, kCFStringEncodingASCII);
+		_product.assign(s);
+		delete[] s;
+	    }
+	}
+    }
+
+    return _product;
+}
+
 uint16_t HID::macos::device_type::usage()
 {
     long value = 0;

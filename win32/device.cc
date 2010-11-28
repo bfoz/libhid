@@ -251,6 +251,52 @@ bool HID::win32::device_type::output(unsigned reportID, buffer_type& report)
     return HidD_SetOutputReport(handle, b, length);
 }
 
+const std::string& HID::win32::device_type::manufacturer()
+{
+    if( _manufacturer.size()==0 )
+    {
+	bool opened = false;
+
+	// If the handle is invalid, try opening the device in read mode
+	if( INVALID_HANDLE_VALUE == handle )
+	    if( !(opened = open(ReadMode)) )
+		return _manufacturer;
+
+	char* s = new char[256];
+	HidD_GetManufacturerString(handle, s, 256);
+	_manufacturer = stringFromTCHAR((const TCHAR*)s);
+	delete[] s;
+
+	if( opened )	// Don't leave the device open if it wasn't open before
+	    close();
+    }
+
+    return _manufacturer;
+}
+
+const std::string& HID::win32::device_type::product()
+{
+    if( _product.size()==0 )
+    {
+	bool opened = false;
+
+	// If the handle is invalid, try opening the device in read mode
+	if( INVALID_HANDLE_VALUE == handle )
+	    if( !(opened = open(ReadMode)) )
+		return _product;
+
+	char* s = new char[256];
+	HidD_GetProductString(handle, s, 256);
+	_product = stringFromTCHAR((const TCHAR*)s);
+	delete[] s;
+
+	if( opened )	// Don't leave the device open if it wasn't open before
+	    close();
+    }
+
+    return _product;
+}
+
 uint16_t HID::win32::device_type::usage()
 {
     if( !capabilities() )
