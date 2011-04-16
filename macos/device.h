@@ -5,6 +5,8 @@
 
 #include <device.h>
 
+#include "element.h"
+
 #include "common.h"
 #include "util.h"
 
@@ -38,6 +40,9 @@ public:
     virtual bool open(OpenMode);
     virtual bool read(buffer_type&);
     virtual bool write(const buffer_type&);
+
+    // Report elements
+    virtual elements_type& elements();
 
     // Reports
     virtual bool feature(unsigned reportID, buffer_type&);

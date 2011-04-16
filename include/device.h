@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "element.h"
+
 namespace HID
 {
     typedef enum { ReadMode=1, WriteMode=2 } OpenMode;
@@ -17,6 +19,7 @@ namespace HID
 	const std::string _path;
 
     protected:
+	elements_type   _elements;
 	std::string	_manufacturer;
 	std::string	_product;
 
@@ -28,6 +31,9 @@ namespace HID
 	virtual bool open(OpenMode)=0;
 	virtual bool read(buffer_type&)=0;
 	virtual bool write(const buffer_type&)=0;
+
+	// Report elements
+	virtual elements_type& elements()=0;
 
 	// Reports
 	virtual bool feature(unsigned reportID, buffer_type&)=0;

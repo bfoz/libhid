@@ -5,8 +5,8 @@
 
 INCLUDEPATH += $$PWD/include
 
-SOURCES += device.cc hid.cc
-HEADERS += $$PWD/include/hid.h
+SOURCES += device.cc element.cc hid.cc
+HEADERS += $$PWD/include/hid.h $$PWD/include/device.h $$PWD/include/element.h
 
 macx {
     DEPENDPATH += $$PWD/macos

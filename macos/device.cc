@@ -85,6 +85,64 @@ bool HID::macos::device_type::write(const buffer_type&)
     return false;
 }
 
+#pragma mark -
+#pragma mark Report elements
+
+HID::elements_type& HID::macos::device_type::elements()
+{
+    if( _elements.size() )
+	return _elements;
+
+    /* Put all of the elements into a temporary container and also put the
+	top-level elements into the _elements container. Then walk the temporary
+	container and reparent anything that isn't a top-level element. The end
+	result should be the proper hierarchy rooted in the _elements container.
+    */
+    CFArrayRef a = IOHIDDeviceCopyMatchingElements(handle, NULL, kIOHIDOptionsTypeNone);
+    if( a )
+    {
+	const size_t length = CFArrayGetCount(a);
+	elements_type	temp;
+	for(size_t i = 0; i < length; ++i)
+	{
+	    IOHIDElementRef ref = (IOHIDElementRef)CFArrayGetValueAtIndex(a, i);
+	    if( ref )
+	    {
+		element_type *const element = new element_type(ref, this);
+		if( element )
+		{
+		    temp.push_back(element);
+
+		    IOHIDElementRef parent = element->parentIOHIDElement();
+		    if( !parent )    // Top-level item?
+			_elements.push_back(element);
+		}
+	    }
+	}
+
+	// Reparent anything with a parent
+	elements_type::iterator i = temp.begin();
+	for(; i != temp.end(); ++i)
+	{
+	    IOHIDElementRef parent = ((macos::element_type*)*i)->parentIOHIDElement();
+	    if( parent )
+	    {
+		// Find the parent
+		elements_type::iterator j = temp.begin();
+		for(; j != temp.end(); ++j)
+		{
+		    if( ((macos::element_type*)*j)->element() == parent )
+		    {
+			((macos::element_type*)*j)->children().push_back(*i);
+			break;
+		    }
+		}
+	    }
+	}
+    }
+    return _elements;
+}
+
 // *** Reports ***
 
 bool HID::macos::device_type::feature(unsigned reportID, buffer_type& report)
