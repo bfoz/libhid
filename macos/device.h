@@ -58,6 +58,9 @@ public:
     uint16_t usagePage();
     uint16_t vendorID()  { return getVendorID(handle); }
     uint16_t versionNumber() { return getVersionNumber(handle); }
+
+    // MacOS specific
+    IOHIDDeviceRef  device() const  { return handle;	}
 };
 
 #endif	// HID_MACOS_DEVICE_H

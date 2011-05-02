@@ -1,9 +1,15 @@
 #include <hid.h>
 
+#include "enumerator.h"
 #include "device.h"
 
 namespace HID
 {
+    enumerator_type* enumerator(filter_type* f)
+    {
+	return new macos::enumerator_type(f);
+    }
+
     device_list find(filter_type* f)
     {
 	device_list devices;
