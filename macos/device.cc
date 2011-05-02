@@ -6,6 +6,10 @@
 
 void HID::macos::device_type::close()
 {
+    // Close the IOHIDDevice if it was open
+    if( _bufferFeature || _bufferInput || _bufferOutput )
+	IOHIDDeviceClose(handle, kIOHIDOptionsTypeNone);
+
     if( _bufferFeature )
     {
 	delete[] _bufferFeature;
@@ -21,7 +25,6 @@ void HID::macos::device_type::close()
 	delete[] _bufferOutput;
 	_bufferOutput = NULL;
     }
-    IOHIDDeviceClose(handle, kIOHIDOptionsTypeNone);
 }
 
 bool HID::macos::device_type::open(OpenMode)
