@@ -48,7 +48,10 @@ namespace HID
 	}
 
 	if( manager )
+	{
+	    IOHIDManagerClose(manager, kIOHIDOptionsTypeNone);
 	    CFRelease(manager);
+	}
 
 	return devices;
     }
