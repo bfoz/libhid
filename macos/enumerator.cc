@@ -7,14 +7,14 @@
 static void device_matched(void* context, IOReturn result, void* sender, IOHIDDeviceRef device)
 {
     if( context && device )
-	static_cast<HID::macos::enumerator_type*>(context)->matched(result, sender, device);
+	static_cast<HID::macos::enumerator_type*>(context)->matched(result, static_cast<IOHIDManagerRef>(sender), device);
 }
 
 // Forward the device removal event to the enumerator object that asked for it
 static void device_removed(void* context, IOReturn result, void* sender, IOHIDDeviceRef device)
 {
     if( context && device )
-	static_cast<HID::macos::enumerator_type*>(context)->removed(result, sender, device);
+	static_cast<HID::macos::enumerator_type*>(context)->removed(result, static_cast<IOHIDManagerRef>(sender), device);
 }
 
 bool HID::macos::enumerator_type::start()
@@ -64,9 +64,9 @@ void HID::macos::enumerator_type::stop()
 
 /* Add the new device to the device list and notify the registered callback, but
     only if it matches the filter set. Accept all devices if there's no filer set.  */
-void HID::macos::enumerator_type::matched(IOReturn result, void* sender, IOHIDDeviceRef deviceref)
+void HID::macos::enumerator_type::matched(IOReturn result, IOHIDManagerRef sender, IOHIDDeviceRef deviceref)
 {
-    if( result && !sender )    // Ignore all errors
+    if( result || (sender != manager) )    // Ignore all errors
 	return;
 
     device_type* device = new macos::device_type(deviceref);
@@ -85,9 +85,9 @@ void HID::macos::enumerator_type::matched(IOReturn result, void* sender, IOHIDDe
     the device is on the enumerator's device list. Otherwise, it's probably a
     device that the callee doesn't care about. The device_type object is
     guaranteed to exist until the callback returns	*/
-void HID::macos::enumerator_type::removed(IOReturn result, void* sender, IOHIDDeviceRef deviceref)
+void HID::macos::enumerator_type::removed(IOReturn result, IOHIDManagerRef sender, IOHIDDeviceRef deviceref)
 {
-    if( result && !sender )    // Ignore all errors
+    if( result || (sender != manager) )    // Ignore all errors
 	return;
 
     // Find the device in the list

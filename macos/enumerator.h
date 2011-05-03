@@ -28,8 +28,8 @@ public:
     virtual void stop();
 
     // Entry points for the device matching and removal callbacks
-    void matched(IOReturn, void*, IOHIDDeviceRef);
-    void removed(IOReturn, void*, IOHIDDeviceRef);
+    void matched(IOReturn, IOHIDManagerRef, IOHIDDeviceRef);
+    void removed(IOReturn, IOHIDManagerRef, IOHIDDeviceRef);
 };
 
 #endif	// MACOS_ENUMERATOR_H
