@@ -4,6 +4,36 @@
 #include "device.h"
 #include "util.h"
 
+/* An IN report callback that stops its run loop when called. This is purely for
+    emulating blocking behavior in the device_type::read() method.  */
+static void input_oneshot(void*		    context,
+			  IOReturn	    result,
+			  void*		    deviceRef,
+			  IOHIDReportType   type,
+			  uint32_t	    reportID,
+			  uint8_t*	    report,
+			  CFIndex	    length)
+{
+    HID::buffer_type *const buffer = static_cast<HID::buffer_type*>(context);
+
+    /* If the report is valid, copy it into the caller's buffer
+	The Report ID is prepended to the buffer so the caller can identify the
+	report	*/
+    if( buffer )
+    {
+	buffer->clear();	// Return an empty buffer on error
+	if( !result && report && deviceRef )
+	{
+	    buffer->reserve(length+1);
+	    buffer->push_back(reportID);
+	    buffer->insert(buffer->end(), report, report+length);
+	}
+    }
+
+    CFRunLoopStop(CFRunLoopGetCurrent());
+}
+
+
 void HID::macos::device_type::close()
 {
     // Close the IOHIDDevice if it was open
@@ -78,8 +108,23 @@ bool HID::macos::device_type::open(OpenMode)
     return false;
 }
 
-bool HID::macos::device_type::read(buffer_type&)
+// Block while waiting for an IN interrupt report
+bool HID::macos::device_type::read(buffer_type& buffer)
 {
+    // Register a callback
+    IOHIDDeviceRegisterInputReportCallback(handle, _bufferInput, _lengthInputBuffer, input_oneshot, &buffer);
+
+    // Schedule the device on the current run loop in case it isn't already scheduled
+    IOHIDDeviceScheduleWithRunLoop(handle, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+
+    // Trap in the run loop until a report is received
+    CFRunLoopRun();
+
+    // The run loop has returned, so unschedule the device
+    IOHIDDeviceUnscheduleFromRunLoop(handle, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+
+    if( buffer.size() )
+	return true;
     return false;
 }
 
