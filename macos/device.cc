@@ -128,9 +128,14 @@ bool HID::macos::device_type::read(buffer_type& buffer)
     return false;
 }
 
-bool HID::macos::device_type::write(const buffer_type&)
+// The Report ID is assumed to be the first byte of the passed buffer
+bool HID::macos::device_type::write(const buffer_type& buffer)
 {
-    return false;
+    return 0 == IOHIDDeviceSetReport(handle,
+				     kIOHIDReportTypeOutput,
+				     buffer[0],
+				     &(buffer[1]),
+				     buffer.size()-1);
 }
 
 #pragma mark -
