@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+
+  <title>bfoz/libhid @ GitHub</title>
+
+  <style type="text/css">
+    body {
+      margin-top: 1.0em;
+      font-family: Helvetica, Arial, FreeSans, san-serif;
+    }
+    #container {
+      margin: 0 auto;
+      width: 700px;
+    }
+    h1 { font-size: 3.8em; margin-bottom: 3px; }
+    h1 .small { font-size: 0.4em; }
+    h1 a { text-decoration: none }
+    h2 { font-size: 1.5em; }
+    h3 { text-align: center; }
+    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
+    .download { float: right; }
+    pre { background: #000; color: #fff; padding: 15px;}
+    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    .footer { text-align:center; padding-top:30px; font-style: italic; }
+  </style>
+</head>
+
+<body>
+  <a href="http://github.com/bfoz/libhid"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
+
+  <div id="container">
+
+    <div class="download">
+      <a href="http://github.com/bfoz/libhid/zipball/master">
+        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
+      <a href="http://github.com/bfoz/libhid/tarball/master">
+        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
+    </div>
+
+    <h1><a href="http://github.com/bfoz/libhid">libhid</a></h1>
+
+    <div class="description">
+      Cross platform Human Interface Device API
+    </div>
+
+    <p><a href='https://github.com/bfoz/libhid'>libhid</a> is a cross-platform C++ library for interacting with <a href='http://en.wikipedia.org/wiki/USB_human_interface_device_class'>USB Human Interface Devices</a>. 
+       It provides both synchronous and asynchronous interfaces.</p>
+
+    <h2>Example</h2>
+    <p>Here is a simple example that finds a device by it's Product ID and Vendor ID, opens the device, and then sends a simple output report.</p>
+    <code><pre>#include &lt;hid.h&gt;
+
+HID::filter:And filters;
+filters.push_back(new VendorID(VENDOR_ID));
+filters.push_back(new ProductID(PRODUCT_ID));
+
+HID::device_list devices = HID:find(&filters);
+if( devices.size() )
+{
+    HID::device_type& device = devices.front();
+    HID::buffer_type buffer;
+    device.output(REPORT_ID, buffer);
+}</pre></code>
+
+    <h2>Install</h2>
+    <p>For git users, the easiest option is to include libhid as a submodule in your project. If you're using qmake you can use the included libhid.pri. Otherwise you'll need to add the appropriate files to whatever build mechanism you're using.</p>
+    <h3>git submodule</h3>
+    <p>To use libhid as a submodule in your project's git repository:
+    <code><pre>git add submodule git://github.com/bfoz/libhid *path*</pre></code>
+    where *path* is the path to put the submodule (relative to your repository root). Then follow the instructions below for linking the library into your project.</p>
+
+    <h2>Linking</h2>
+    <p>At the moment, qmake is the only build mechanism directly supported in the source. Other mechanisms will be supported eventually. Currently libhid ony provides for static linkage. </p>
+
+    <h3>Qt/qmake</h3>
+    <p>Simply include libhid.pri in your project's .pro file. qmake will take care of the rest.</p>
+
+    <h2>License</h2>
+    <p>BSD</p>
+
+
+    <h2>Download</h2>
+    <p>
+      You can download this project in either
+      <a href="http://github.com/bfoz/libhid/zipball/master">zip</a> or
+      <a href="http://github.com/bfoz/libhid/tarball/master">tar</a> formats.
+    </p>
+    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
+      by running:
+      <pre>$ git clone git://github.com/bfoz/libhid</pre>
+    </p>
+
+    <div class="footer">
+      get the source code on GitHub : <a href="http://github.com/bfoz/libhid">bfoz/libhid</a>
+    </div>
+
+  </div>
+
+  
+</body>
+</html>
+
