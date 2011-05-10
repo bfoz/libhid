@@ -26,6 +26,8 @@ extern "C"
 #endif
 }
 
+#include "element.h"
+
 typedef std::basic_string<TCHAR> tstring; // string of TCHARs
 
 namespace HID
@@ -56,6 +58,8 @@ class HID::win32::device_type : public HID::device_type
     const HIDD_ATTRIBUTES& attributes();
     HIDP_CAPS*	capabilities();
     PHIDP_PREPARSED_DATA preparsedData();
+    void button_elements(elements_type&);
+    void value_elements(elements_type&);
 
 public:
     device_type(const TCHAR*);
@@ -79,6 +83,9 @@ public:
     virtual bool open(OpenMode);
     virtual bool read(buffer_type&);
     virtual bool write(const buffer_type&);
+
+    // Report elements
+    virtual elements_type& elements();
 
     // Reports
     virtual bool feature(unsigned reportID, buffer_type&);
