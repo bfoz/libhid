@@ -2,6 +2,8 @@
 <html>
 <head>
   <meta charset='utf-8'>
+  <link rel="stylesheet" type="text/css" href="http://code.google.com/css/codesite.css"></link>
+  <script type="text/javascript" src="http://code.google.com/js/prettify.js"></script>
 
   <title>bfoz/libhid @ GitHub</title>
 
@@ -21,13 +23,12 @@
     h3 { text-align: center; }
     .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
     .download { float: right; }
-    pre { background: #000; color: #fff; padding: 15px;}
     hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
     .footer { text-align:center; padding-top:30px; font-style: italic; }
   </style>
 </head>
 
-<body>
+<body onload="prettyPrint()">
   <a href="http://github.com/bfoz/libhid"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
 
   <div id="container">
@@ -50,7 +51,7 @@
 
     <h2>Example</h2>
     <p>Here is a simple example that finds a device by it's Product ID and Vendor ID, opens the device, and then sends a simple output report.</p>
-    <code><pre>#include &lt;hid.h&gt;
+    <code><pre class='prettyprint'>#include &lt;hid.h&gt;
 
 HID::filter:And filters;
 filters.push_back(new VendorID(VENDOR_ID));
