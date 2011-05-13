@@ -59,3 +59,11 @@ HID::device_list HID::find(filter_type* f)
     SetupDiDestroyDeviceInfoList(info);
     return devices;
 }
+
+// Get and dispatch messages until GetMessage() says otherwise
+void HID::run()
+{
+    MSG message;
+    while( GetMessage(&message, NULL, 0, 0) > 0 )
+	DispatchMessage(&message);	// Default processing
+}

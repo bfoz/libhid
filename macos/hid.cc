@@ -55,4 +55,10 @@ namespace HID
 
 	return devices;
     }
+
+    // Block until the run loop finishes
+    void run()
+    {
+	CFRunLoopRun();
+    }
 }

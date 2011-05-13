@@ -12,6 +12,8 @@ namespace HID
 {
     enumerator_type* enumerator(filter_type* f=NULL);
     device_list find(filter_type* f=NULL);
+
+    void run();
 }
 
 #endif	// HID_H
