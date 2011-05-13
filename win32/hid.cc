@@ -1,15 +1,23 @@
+#include <cstdarg>
 #include <hid.h>
 
 #include "auto_free.h"
+#include "enumerator.h"
 #include "device.h"
-
-#include <cstdarg>
 
 inline GUID getGUID()
 {
     GUID    guid;
     HidD_GetHidGuid(&guid);	// Get a GUID for the HID device class
     return guid;
+}
+
+namespace HID
+{
+    enumerator_type* enumerator(filter_type* f)
+    {
+	return new win32::enumerator_type(f);
+    }
 }
 
 HID::device_list HID::find(filter_type* f)
