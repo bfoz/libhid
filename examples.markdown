@@ -3,7 +3,18 @@ layout: documentation
 title: Examples
 ---
 
-# Finding Devices
+# Enumerating Devices
+_libhid_ provides for both synchronous and asynchronous device discovery. To use
+the synchronous interface, call `HID::find()` with an optional filter set. The
+call will return a list of device objects that match the filters. If no filters
+were given, all available devices are returned.
+
+The asynchronous interface is built around an enumerator class. An instance of
+the enumerator class can be used to discover connected devices and receive
+notifications when devices are attached or removed. If provided with a set of
+filters the enumerator will only generate notifications for devices that match
+the filters.
+
 
 {% highlight cpp %}
 #include <hid.h>;
