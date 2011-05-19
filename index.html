@@ -69,14 +69,18 @@ if( devices.size() )
 }</pre></code>
 
     <h2>Install</h2>
-    <p>For git users, the easiest option is to include libhid as a submodule in your project. If you're using qmake you can use the included libhid.pri. Otherwise you'll need to add the appropriate files to whatever build mechanism you're using.</p>
+    <p>For git users, the easiest option is to include <em>libhid</em> as a submodule in your project. If you're using qmake you can use the included libhid.pri. Otherwise you'll need to add the appropriate files to whatever build mechanism you're using.</p>
     <h3>git submodule</h3>
-    <p>To use libhid as a submodule in your project's git repository:
-    <code><pre>git add submodule git://github.com/bfoz/libhid *path*</pre></code>
-    where *path* is the path to put the submodule (relative to your repository root). Then follow the instructions below for linking the library into your project.</p>
+    <p>To use <em>libhid</em> as a submodule in your project's git repository:
+    <code><pre>git add submodule git://github.com/bfoz/libhid /your_project/lib/hid</pre></code>
+    Then follow the instructions below for linking the library into your project.</p>
+
+    <h3>Source</h3>
+    <p>Download the source and extract it into a subdirectory of your project, then follow the linking instructions below.</p>
 
     <h2>Linking</h2>
-    <p>At the moment, qmake is the only build mechanism directly supported in the source. Other mechanisms will be supported eventually. Currently libhid ony provides for static linkage. </p>
+    <p><em>libhid</em> is small and light enough to be statically linked into your applications. Support for building a shared library isn't currently planned, but there's no reason it can't be done.</p>
+    <p>At the moment, qmake is the only build mechanism directly supported in the source. Other mechanisms will be supported eventually.</p>
 
     <h3>Qt/qmake</h3>
     <p>Simply include libhid.pri in your project's .pro file. qmake will take care of the rest.</p>
