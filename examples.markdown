@@ -28,7 +28,7 @@ HID::device_list devices = HID:find(&filters);
 if( devices.size() )
 {
     HID::device_type& device = devices.front();
-    device.open();
+    device.open(HID::WriteMode);
     HID::buffer_type buffer;
     device.output(REPORT_ID, buffer);
 }

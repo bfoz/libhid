@@ -53,7 +53,7 @@
     <p>Here is a simple example that finds a device by its Product ID and Vendor ID, opens the device, and then sends a simple output report. More examples can be found <a href="examples.html">here</a>.</p>
     <code><pre class='prettyprint'>#include &lt;hid.h&gt;
 
-HID::filter:And filters;
+HID::filter::And filters;
 filters.push_back(new VendorID(VENDOR_ID));
 filters.push_back(new ProductID(PRODUCT_ID));
 
