@@ -69,4 +69,9 @@ if( enumerator->start() )
 
 {% endhighlight %}
 
+**Note** that on _win32_, if the device isn't already open, calling `device->product()`
+will automatically open the device read-only, get the product string, and then
+close the device. If the device was already open it will remain open after the
+call to `device->product()`.
+
 # Opening Devices
