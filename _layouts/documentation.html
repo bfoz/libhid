@@ -5,10 +5,6 @@
   <link rel="stylesheet" type="text/css" href="friendly.css"></link>
   <title>{{ page.title }}</title>
   <style type='text/css'>
-    body {
-	margin: 0 auto;
-	width: 700px;
-    }
     div.highlight {
 	font-size: 9pt;
 	background-color: #FAFAFA;
@@ -19,11 +15,36 @@
 	overflow: auto;
 	word-wrap: break-word;
     }
+    div#content {
+	margin-left: 10em;
+	margin-right: 10em;
+    }
+    div#nav {
+	font-family: Arial, Verdana, sans-serif;
+	float: left;
+	width: 10em;
+	margin-top: 2em;
+    }
+    div#nav ul { margin-top: 0; margin-bottom: 0; }
+    div#nav ul li { list-style: none; padding-bottom: 0.1em; }
+    div#nav ul li > ul { margin-left: 1em; }
+    div#nav ul li a { text-decoration: none; }
   </style>
 </head>
 
 <body>
+
+<div id='nav'>
+    <ul class='nav'>
+	<li><a href='index.html'>About</a></li>
+	<li><a href='examples.html'>Examples</a></li>
+    </ul>
+</div>
+
+<div id='content'>
 {{ content }}
+</div>
+
 </body>
 </html>
 
