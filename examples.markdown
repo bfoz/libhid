@@ -24,14 +24,13 @@ HID::filter::And filters;
 filters.push_back(new VendorID(VENDOR_ID));
 filters.push_back(new ProductID(PRODUCT_ID));
 
-HID::device_list devices = HID:find(&filters);
-if( devices.size() )
-{
-    HID::device_type& device = devices.front();
-    device.open(HID::WriteMode);
-    HID::buffer_type buffer;
-    device.output(REPORT_ID, buffer);
-}
+// Get a list of available devices matching both PRODUCT_ID and VENDOR_ID
+HID::device_list devices = HID::find(&filters);
+
+// Display each device's product string on the console
+HID::device_list::iterator i = devices.begin();
+for(; i != devices.end(); ++i)
+    printf("Found device %s\n", (*i)->product().c_str());
 {% endhighlight %}
 
 ## The Enumerator
