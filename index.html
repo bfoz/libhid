@@ -60,7 +60,7 @@ filters.push_back(new ProductID(PRODUCT_ID));
 HID::device_list devices = HID::find(&filters);
 if( devices.size() )
 {
-    HID::device_type& device = devices.front();
+    HID::device_type* device = devices.front();
 
     device.open(HID::WriteMode);
 
@@ -106,7 +106,6 @@ if( devices.size() )
 
   </div>
 
-  
 </body>
 </html>
 
