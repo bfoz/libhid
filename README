@@ -41,3 +41,21 @@ Here is a simple example that finds a device by it's Product ID and Vendor ID, o
 	    HID::buffer_type buffer;
 	    device.output(REPORT_ID, buffer);
 	}
+
+Devices can also be found using an enumerator object. The enumerator generates notifications whenever a device is added or removed and matches an optional filter (the same filter objects used by find() ). Here's a quick example…
+
+	#include <hid.h>
+
+	// Called when a device is added that matches the enumerator's filter
+	void matched(HID::enumerator_type* enumerator, HID::device_type* device, void* context)
+	{}
+
+	// Called when a matching device is removed
+	void removed(HID::enumerator_type* enumerator, HID::device_type* device, void* context)
+	{}
+
+	// Create a USB HID enumerator to watch for device events and dispatch them accordingly
+	HID::enumerator_type* enumerator = HID::enumerator();
+	enumerator->setMatchCallback(matched, &my_context);
+	enumerator->setRemovalCallback(removed, &my_context);    
+
