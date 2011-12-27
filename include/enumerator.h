@@ -15,6 +15,7 @@ namespace HID
     {
     public:
 	typedef void (*callback_type)(enumerator_type*, device_type*, void* context);
+	typedef	device_list::iterator	iterator;
 
 	enumerator_type(filter_type* f=0) : _filter(f), _matchCallback(NULL), _matchContext(NULL) {}
 	virtual ~enumerator_type()
@@ -23,6 +24,10 @@ namespace HID
 	    for(; i != _devices.end(); ++i)
 		delete *i;
 	}
+
+	// Container interface
+	device_list::iterator    begin() { return _devices.begin();	}
+	device_list::iterator    end()   { return _devices.end();	}
 
 	void filter(filter_type* f) { _filter = f;	}
 	filter_type* filter() const { return _filter;   }
