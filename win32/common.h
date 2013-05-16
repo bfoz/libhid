@@ -13,6 +13,7 @@ extern "C"
 #include <stdlib.h>
 #include <malloc.h>
 #include <stdio.h>
+#include <hidusage.h>
 #include <hidpi.h>
 #include <hidsdi.h>
 #endif

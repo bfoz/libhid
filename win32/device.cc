@@ -1,6 +1,7 @@
 #include <cstdarg>
 #include <cstdio>
 
+#include "common.h"
 #include "device.h"
 #include "button.h"
 #include "value.h"
@@ -200,11 +201,13 @@ bool HID::win32::device_type::write(const buffer_type& buffer)
     uint8_t* b = bufferInputReport();
     std::copy(buffer.begin(), buffer.end(), b);
 
-    return WriteFile(handle, b, capabilities()->OutputReportByteLength, &num, NULL);
+    return WriteFile(handle, b, capabilities()->OutputReportByteLength, &num, NULL) != FALSE;
 }
 
+#if !defined(_MSC_VER)
 #pragma mark -
 #pragma mark Report elements
+#endif
 
 // Fetch the button capabilities and generate element_type objects for each
 void HID::win32::device_type::button_elements(elements_type& _buttons)
@@ -212,14 +215,17 @@ void HID::win32::device_type::button_elements(elements_type& _buttons)
     capabilities();	// Ensure that the HIDP_CAPS structure is populated
 
     // Get the array lengths from _capabilities
-    long unsigned numFeature = _capabilities->NumberFeatureButtonCaps;
-    long unsigned numInput = _capabilities->NumberInputButtonCaps;
-    long unsigned numOutput = _capabilities->NumberOutputButtonCaps;
+    USHORT numFeature = _capabilities->NumberFeatureButtonCaps;
+    USHORT numInput = _capabilities->NumberInputButtonCaps;
+    USHORT numOutput = _capabilities->NumberOutputButtonCaps;
     size_t numberOfCaps = numFeature + numInput + numOutput;
 
-    HIDP_BUTTON_CAPS buffer[numberOfCaps];
+    if (numberOfCaps <= 0)
+        return;
 
-    HidP_GetButtonCaps(HidP_Feature, buffer, &numFeature, _preparsedData);
+    std::vector<HIDP_BUTTON_CAPS> buffer(numberOfCaps);
+
+    HidP_GetButtonCaps(HidP_Feature, &buffer[0], &numFeature, _preparsedData);
 
     HIDP_BUTTON_CAPS *const _inputButtons = &buffer[numFeature];
     HidP_GetButtonCaps(HidP_Input, _inputButtons, &numInput, _preparsedData);
@@ -259,20 +265,27 @@ void HID::win32::device_type::value_elements(elements_type& _values)
     capabilities();	// Ensure that the HIDP_CAPS structure is populated
 
     // Get the array lengths from _capabilities
-    long unsigned numFeature = _capabilities->NumberFeatureValueCaps;
-    long unsigned numInput = _capabilities->NumberInputValueCaps;
-    long unsigned numOutput = _capabilities->NumberOutputValueCaps;
+    USHORT numFeature = _capabilities->NumberFeatureValueCaps;
+    USHORT numInput = _capabilities->NumberInputValueCaps;
+    USHORT numOutput = _capabilities->NumberOutputValueCaps;
     size_t numberOfCaps = numFeature + numInput + numOutput;
 
-    HIDP_VALUE_CAPS buffer[numberOfCaps];
+    if (numberOfCaps <= 0)
+	return;
 
-    HidP_GetValueCaps(HidP_Feature, buffer, &numFeature, _preparsedData);
+    std::vector<HIDP_VALUE_CAPS> buffer(numberOfCaps);
 
-    HIDP_VALUE_CAPS *const _inputButtons = &buffer[numFeature];
-    HidP_GetValueCaps(HidP_Input, _inputButtons, &numInput, _preparsedData);
+    if (numFeature > 0) {
+	HidP_GetValueCaps(HidP_Feature, &buffer[0], &numFeature, _preparsedData);
+    }
 
-    HIDP_VALUE_CAPS *const _outputButtons = &_inputButtons[numInput];
-    HidP_GetValueCaps(HidP_Output, _outputButtons, &numOutput, _preparsedData);
+    if (numInput > 0) {
+	HidP_GetValueCaps(HidP_Input, &buffer[numFeature], &numInput, _preparsedData);
+    }
+
+    if (numOutput > 0) {
+	HidP_GetValueCaps(HidP_Output, &buffer[numFeature + numInput], &numOutput, _preparsedData);
+    }
 
     // Update the array length in case HidP_GetButtonCaps() returned different lengths
     numberOfCaps = numFeature + numInput + numOutput;
@@ -316,8 +329,8 @@ HID::elements_type& HID::win32::device_type::elements()
       		the link collections be at the beginning of the temp container
       		and in the same order returned by HidP_GetLinkCollectionNodes()	*/
     unsigned long length = _capabilities->NumberLinkCollectionNodes;
-    HIDP_LINK_COLLECTION_NODE nodes[length];
-    HidP_GetLinkCollectionNodes(nodes, &length, _preparsedData);
+    std::vector<HIDP_LINK_COLLECTION_NODE> nodes(length);
+    HidP_GetLinkCollectionNodes(&nodes[0], &length, _preparsedData);
     for(size_t i=0; i < length; ++i)
     {
 	element_type *const collection = new collection_type(nodes[i], this);
@@ -363,7 +376,7 @@ bool HID::win32::device_type::feature(unsigned reportID, buffer_type& report)
 
     HidP_InitializeReportForID(HidP_Feature, reportID, preparsedData(), (char*)b, length);
     std::copy(report.begin(), report.end(), b+1);
-    return HidD_SetFeature(handle, b, report.size()+1);
+    return HidD_SetFeature(handle, b, report.size()+1) != FALSE;
 }
 
 HID::buffer_type HID::win32::device_type::feature(unsigned reportID)
@@ -399,7 +412,7 @@ bool HID::win32::device_type::output(unsigned reportID, buffer_type& report)
     HidP_InitializeReportForID(HidP_Output, reportID, preparsedData(), (char*)b, length);
     std::copy(report.begin(), report.end(), b+1);
 
-    return HidD_SetOutputReport(handle, b, length);
+    return HidD_SetOutputReport(handle, b, length) != FALSE;
 }
 
 const std::string& HID::win32::device_type::manufacturer()

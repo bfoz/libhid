@@ -32,7 +32,7 @@ public:
     virtual ~value_type() {};
 
     // Properties
-    virtual bool hasNullState() const { return _value.HasNull; }
+    virtual bool hasNullState() const { return _value.HasNull != FALSE; }
     virtual bool hasPreferredState() const { return false; }
     virtual bool isArray() const { return false; }
     virtual bool isCollection()	const { return false; }
