@@ -54,8 +54,8 @@ public:
     virtual range_type physicalRange() const	{ return std::make_pair(_value.PhysicalMin, _value.PhysicalMax);}
     virtual range_type reportedRange()		{ return std::make_pair(_value.LogicalMin, _value.LogicalMax);	}
     virtual uint32_t reportID() const	{ return _value.ReportID;   }
-    virtual uint32_t reportSize() const { return 0;	}
-    virtual uint32_t reportCount() const{ return 0;	}
+    virtual uint32_t reportSize() const { return _value.BitSize;	}
+    virtual uint32_t reportCount() const{ return _value.ReportCount;	}
     virtual const char*	typeName() const{ return "Value";	}
     virtual uint32_t unit() const	{ return _value.Units;	}
     virtual uint32_t unitExponent() const   { return _value.UnitsExp;	}
