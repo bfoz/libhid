@@ -60,6 +60,7 @@ class HID::win32::device_type : public HID::device_type
     PHIDP_PREPARSED_DATA preparsedData();
     void button_elements(elements_type&);
     void value_elements(elements_type&);
+    void link_subcollections(elements_type&, std::vector<HIDP_LINK_COLLECTION_NODE>&, size_t index = 0);
 
 public:
     device_type(const TCHAR*);

@@ -337,10 +337,14 @@ HID::elements_type& HID::win32::device_type::elements()
 
 	// Everything goes into the temporary container
 	temp.push_back(collection);
-
-	// Add top-level nodes to the _elements container
-	if( 0 == nodes[i].Parent )
-	    _elements.push_back(collection);
+    }
+    if (length > 0)
+    {
+	/* The top-level collections were divided into different physical device object (PDO) in Windows
+	   (see: http://msdn.microsoft.com/en-us/library/windows/hardware/ff543475(v=vs.85).aspx). 
+	   Therefore, there is only one top-level collection, others are sub-collections. */
+	_elements.push_back(temp[0]);
+	link_subcollections(temp, nodes);
     }
 
     // Get the button elements
@@ -349,16 +353,12 @@ HID::elements_type& HID::win32::device_type::elements()
     // Get the value elements
     value_elements(temp);
 
-    // Walk the temporary container and reparent anything that has a parent
-    elements_type::iterator i = temp.begin();
-    for(; i != temp.end(); ++i)
-    {
-	const unsigned parent = static_cast<win32::element_type*>(*i)->parentCollectionIndex();
-	if( (parent < length) && (parent || !(*i)->isCollection()) )
-	    temp[parent]->children().push_back(*i);
-
-	if( (((*i)->isCollection() && parent) || parent) && (parent < length) )
-	    temp[parent]->children().push_back(*i);
+    // Walk the temporary container and reparent anything that has a parent (skip collections)
+    elements_type::iterator it = temp.begin() + length;
+    for(; it != temp.end(); ++it) {
+	const unsigned parent = static_cast<win32::element_type*>(*it)->parentCollectionIndex();
+	if (parent < length)
+	    temp[parent]->children().push_back(*it);
     }
 
     return _elements;
@@ -473,4 +473,25 @@ uint16_t HID::win32::device_type::usagePage()
     if( !capabilities() )
 	return 0;
     return capabilities()->UsagePage;
+}
+
+void HID::win32::device_type::link_subcollections(elements_type& elements, std::vector<HIDP_LINK_COLLECTION_NODE>& nodes, size_t index)
+{
+    /* refer: http://msdn.microsoft.com/en-us/library/windows/hardware/ff542355(v=vs.85).aspx#ddk_link_collection_array_kg. */
+    const size_t firstChild = nodes[index].FirstChild;
+    if (firstChild <= 0)
+	return;
+
+    if (nodes[firstChild].FirstChild > 0)
+	link_subcollections(elements, nodes, firstChild);
+    elements[index]->children().push_back(elements[firstChild]);
+    for (HIDP_LINK_COLLECTION_NODE* node = &nodes[nodes[index].FirstChild];
+	node->NextSibling > 0;
+	node = &nodes[node->NextSibling])
+    {
+	const size_t nextSibling = node->NextSibling;
+	if (nodes[nextSibling].FirstChild > 0)
+	    link_subcollections(elements, nodes, nextSibling);
+	elements[index]->children().push_back(elements[nextSibling]);
+    }
 }
