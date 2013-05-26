@@ -19,7 +19,7 @@ WINHIDSDI BOOL WINAPI HidD_SetOutputReport(HANDLE, void*, ULONG);
 std::string stringFromTCHAR(const TCHAR* c)
 {
     std::string s;
-    const uint8_t num = lstrlen((LPCTSTR)c) * sizeof(TCHAR);
+    const uint8_t num = lstrlen((LPCTSTR)c);
     for(unsigned k = 0; k < num; ++c, ++k)
 	s.push_back(wctob(*c));
     return s;
