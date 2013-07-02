@@ -160,6 +160,8 @@ bool HID::win32::device_type::read(buffer_type& buffer)
     bool run = true;
     while(run)
     {
+	if( INVALID_HANDLE_VALUE == handle )
+	    return false;
 	ReadFile(handle, b, length, NULL, &overlapped);
 	switch( WaitForSingleObject(overlapped.hEvent, time) )
 	{
