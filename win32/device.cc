@@ -245,7 +245,7 @@ void HID::win32::device_type::button_elements(elements_type& _buttons)
 	if( buffer[i].IsRange )
 	{
 	    unsigned k = 0;
-	    for(unsigned j=buffer[i].Range.DataIndexMin; j < buffer[i].Range.DataIndexMax; ++j, ++k)
+	    for(unsigned j=buffer[i].Range.DataIndexMin; j <= buffer[i].Range.DataIndexMax; ++j, ++k)
 	    {
 		element_type *const element = new button_type(buffer[i], k, this);
 		if( element )
@@ -298,7 +298,7 @@ void HID::win32::device_type::value_elements(elements_type& _values)
 	// If the item is a range, generate elements for each member
 	if( buffer[i].IsRange )
 	{
-	    for(unsigned j=buffer[i].Range.DataIndexMin; j < buffer[i].Range.DataIndexMax; ++j)
+	    for(unsigned j=buffer[i].Range.DataIndexMin; j <= buffer[i].Range.DataIndexMax; ++j)
 	    {
 		element_type *const element = new HID::win32::value_type(buffer[i], j, this);
 		if( element )
