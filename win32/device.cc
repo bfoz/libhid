@@ -136,6 +136,10 @@ bool HID::win32::device_type::open(OpenMode mode)
     overlapped.Offset = 0;
     overlapped.OffsetHigh = 0;
 
+    _write_overlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    _write_overlapped.Offset = 0;
+    _write_overlapped.OffsetHigh = 0;
+
     handle = CreateFile(_tpath.c_str(), m, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
 
     if( INVALID_HANDLE_VALUE == handle )
@@ -193,17 +197,39 @@ bool HID::win32::device_type::read(buffer_type& buffer)
 
 bool HID::win32::device_type::write(const buffer_type& buffer)
 {
-    DWORD num;
-
     if( INVALID_HANDLE_VALUE == handle )
 	return false;
     if( buffer.size() > capabilities()->OutputReportByteLength )
 	return false;
 
-    uint8_t* b = bufferInputReport();
+    uint8_t* b = bufferOutputReport();
     std::copy(buffer.begin(), buffer.end(), b);
 
-    return WriteFile(handle, b, capabilities()->OutputReportByteLength, &num, NULL) != FALSE;
+    DWORD num = 0;
+    const size_t time = 100;
+    bool run = true;
+    while(run)
+    {
+	if( INVALID_HANDLE_VALUE == handle )
+	    return false;
+	WriteFile(handle, b, capabilities()->OutputReportByteLength, NULL, &_write_overlapped);
+	switch( WaitForSingleObject(_write_overlapped.hEvent, time) )
+	{
+	    case WAIT_OBJECT_0:
+		GetOverlappedResult(handle, &_write_overlapped, &num, 0);
+		run = false;
+		break;
+	    case WAIT_TIMEOUT:
+		CancelIo(handle);
+		break;
+	    default:
+		run = false;
+		CancelIo(handle);
+		break;
+	}
+    }
+
+    return num == capabilities()->OutputReportByteLength;
 }
 
 #if !defined(_MSC_VER)

@@ -44,6 +44,7 @@ class HID::win32::device_type : public HID::device_type
     HANDLE	handle;
     HIDD_ATTRIBUTES	_attributes;
     OVERLAPPED		overlapped;
+    OVERLAPPED		_write_overlapped;
     PHIDP_PREPARSED_DATA    _preparsedData;
     HIDP_CAPS*	_capabilities;
 
