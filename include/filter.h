@@ -47,7 +47,7 @@ public:
     void push_back(filter_type* f)  { children.push_back(f); }
 };
 
-struct HID::filter::And : public filter_set
+class HID::filter::And : public filter_set
 {
     bool accept(device_type& device)
     {
@@ -74,7 +74,7 @@ public:
     }
 };
 
-struct HID::filter::Or : public filter_set
+class HID::filter::Or : public filter_set
 {
     bool accept(device_type& device)
     {

@@ -133,8 +133,9 @@ void HID::win32::enumerator_type::removed(DEV_BROADCAST_DEVICEINTERFACE& d)
 		_removalCallback(this, *i, _removalContext);
 
 	    // Destroy the device object and remove it from the device list
+	    HID::device_type* tmp = *i;
 	    _devices.remove(*i);
-	    delete *i;
+	    delete tmp;
 
 	    break;
 	}

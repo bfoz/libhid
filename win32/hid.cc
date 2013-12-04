@@ -33,7 +33,7 @@ HID::device_list HID::find(filter_type* f)
     unsigned i = 0;
     while(1)
     {
-	SP_DEVICE_INTERFACE_DATA devInterface = { cbSize : sizeof(SP_DEVICE_INTERFACE_DATA) };
+	SP_DEVICE_INTERFACE_DATA devInterface = { sizeof(SP_DEVICE_INTERFACE_DATA) };
 	if( !SetupDiEnumDeviceInterfaces(info, NULL, &guid, i, &devInterface) )
 	    break;
 	++i;
