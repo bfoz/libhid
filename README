@@ -30,11 +30,11 @@ Here is a simple example that finds a device by it's Product ID and Vendor ID, o
 
 	#include <hid.h>
 
-	HID::filter:And filters;
+	HID::filter::And filters;
 	filters.push_back(new VendorID(VENDOR_ID));
 	filters.push_back(new ProductID(PRODUCT_ID));
 
-	HID::device_list devices = HID:find(&filters);
+	HID::device_list devices = HID::find(&filters);
 	if( devices.size() )
 	{
 	    HID::device_type& device = devices.front();
