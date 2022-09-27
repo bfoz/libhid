@@ -23,13 +23,11 @@ Qt / qmake
 
 Simply include libhid.pri in your project's .pro file. qmake will take care of the rest.
 
-Alternatively, checkout this library as a subdirectory `libhid` into the root directory of your project (probably as a Git submodule) and add
+Alternatively, just add
 
-```
-SUBDIRS += libhid
-```
+   SUBDIRS += libhid
 
-to the `.pro` file of your project.
+to your project's .pro file.
 
 Example
 =======
