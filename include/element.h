@@ -7,6 +7,17 @@
 #include <string>
 #include <vector>
 
+// workaround for no 'stdint.h' support before msvc 10
+#if defined(_MSC_VER) && _MSC_VER < 1600
+#   include "stdint.h"
+#else
+#   include <stdint.h>
+#endif
+
+#if defined(_MSC_VER)
+    typedef int ssize_t;
+#endif
+
 namespace HID
 {
     class device_type;

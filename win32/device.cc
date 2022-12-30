@@ -1,6 +1,7 @@
 #include <cstdarg>
 #include <cstdio>
 
+#include "common.h"
 #include "device.h"
 #include "button.h"
 #include "value.h"
@@ -18,7 +19,7 @@ WINHIDSDI BOOL WINAPI HidD_SetOutputReport(HANDLE, void*, ULONG);
 std::string stringFromTCHAR(const TCHAR* c)
 {
     std::string s;
-    const uint8_t num = lstrlen((LPCTSTR)c) * sizeof(TCHAR);
+    const uint8_t num = lstrlen((LPCTSTR)c);
     for(unsigned k = 0; k < num; ++c, ++k)
 	s.push_back(wctob(*c));
     return s;
@@ -135,6 +136,10 @@ bool HID::win32::device_type::open(OpenMode mode)
     overlapped.Offset = 0;
     overlapped.OffsetHigh = 0;
 
+    _write_overlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    _write_overlapped.Offset = 0;
+    _write_overlapped.OffsetHigh = 0;
+
     handle = CreateFile(_tpath.c_str(), m, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
 
     if( INVALID_HANDLE_VALUE == handle )
@@ -159,6 +164,8 @@ bool HID::win32::device_type::read(buffer_type& buffer)
     bool run = true;
     while(run)
     {
+	if( INVALID_HANDLE_VALUE == handle )
+	    return false;
 	ReadFile(handle, b, length, NULL, &overlapped);
 	switch( WaitForSingleObject(overlapped.hEvent, time) )
 	{
@@ -190,21 +197,45 @@ bool HID::win32::device_type::read(buffer_type& buffer)
 
 bool HID::win32::device_type::write(const buffer_type& buffer)
 {
-    DWORD num;
-
     if( INVALID_HANDLE_VALUE == handle )
 	return false;
     if( buffer.size() > capabilities()->OutputReportByteLength )
 	return false;
 
-    uint8_t* b = bufferInputReport();
+    uint8_t* b = bufferOutputReport();
     std::copy(buffer.begin(), buffer.end(), b);
 
-    return WriteFile(handle, b, capabilities()->OutputReportByteLength, &num, NULL);
+    DWORD num = 0;
+    const size_t time = 100;
+    bool run = true;
+    while(run)
+    {
+	if( INVALID_HANDLE_VALUE == handle )
+	    return false;
+	WriteFile(handle, b, capabilities()->OutputReportByteLength, NULL, &_write_overlapped);
+	switch( WaitForSingleObject(_write_overlapped.hEvent, time) )
+	{
+	    case WAIT_OBJECT_0:
+		GetOverlappedResult(handle, &_write_overlapped, &num, 0);
+		run = false;
+		break;
+	    case WAIT_TIMEOUT:
+		CancelIo(handle);
+		break;
+	    default:
+		run = false;
+		CancelIo(handle);
+		break;
+	}
+    }
+
+    return num == capabilities()->OutputReportByteLength;
 }
 
+#if !defined(_MSC_VER)
 #pragma mark -
 #pragma mark Report elements
+#endif
 
 // Fetch the button capabilities and generate element_type objects for each
 void HID::win32::device_type::button_elements(elements_type& _buttons)
@@ -212,14 +243,17 @@ void HID::win32::device_type::button_elements(elements_type& _buttons)
     capabilities();	// Ensure that the HIDP_CAPS structure is populated
 
     // Get the array lengths from _capabilities
-    long unsigned numFeature = _capabilities->NumberFeatureButtonCaps;
-    long unsigned numInput = _capabilities->NumberInputButtonCaps;
-    long unsigned numOutput = _capabilities->NumberOutputButtonCaps;
+    USHORT numFeature = _capabilities->NumberFeatureButtonCaps;
+    USHORT numInput = _capabilities->NumberInputButtonCaps;
+    USHORT numOutput = _capabilities->NumberOutputButtonCaps;
     size_t numberOfCaps = numFeature + numInput + numOutput;
 
-    HIDP_BUTTON_CAPS buffer[numberOfCaps];
+    if (numberOfCaps <= 0)
+        return;
 
-    HidP_GetButtonCaps(HidP_Feature, buffer, &numFeature, _preparsedData);
+    std::vector<HIDP_BUTTON_CAPS> buffer(numberOfCaps);
+
+    HidP_GetButtonCaps(HidP_Feature, &buffer[0], &numFeature, _preparsedData);
 
     HIDP_BUTTON_CAPS *const _inputButtons = &buffer[numFeature];
     HidP_GetButtonCaps(HidP_Input, _inputButtons, &numInput, _preparsedData);
@@ -237,7 +271,7 @@ void HID::win32::device_type::button_elements(elements_type& _buttons)
 	if( buffer[i].IsRange )
 	{
 	    unsigned k = 0;
-	    for(unsigned j=buffer[i].Range.DataIndexMin; j < buffer[i].Range.DataIndexMax; ++j, ++k)
+	    for(unsigned j=buffer[i].Range.DataIndexMin; j <= buffer[i].Range.DataIndexMax; ++j, ++k)
 	    {
 		element_type *const element = new button_type(buffer[i], k, this);
 		if( element )
@@ -259,20 +293,27 @@ void HID::win32::device_type::value_elements(elements_type& _values)
     capabilities();	// Ensure that the HIDP_CAPS structure is populated
 
     // Get the array lengths from _capabilities
-    long unsigned numFeature = _capabilities->NumberFeatureValueCaps;
-    long unsigned numInput = _capabilities->NumberInputValueCaps;
-    long unsigned numOutput = _capabilities->NumberOutputValueCaps;
+    USHORT numFeature = _capabilities->NumberFeatureValueCaps;
+    USHORT numInput = _capabilities->NumberInputValueCaps;
+    USHORT numOutput = _capabilities->NumberOutputValueCaps;
     size_t numberOfCaps = numFeature + numInput + numOutput;
 
-    HIDP_VALUE_CAPS buffer[numberOfCaps];
+    if (numberOfCaps <= 0)
+	return;
 
-    HidP_GetValueCaps(HidP_Feature, buffer, &numFeature, _preparsedData);
+    std::vector<HIDP_VALUE_CAPS> buffer(numberOfCaps);
 
-    HIDP_VALUE_CAPS *const _inputButtons = &buffer[numFeature];
-    HidP_GetValueCaps(HidP_Input, _inputButtons, &numInput, _preparsedData);
+    if (numFeature > 0) {
+	HidP_GetValueCaps(HidP_Feature, &buffer[0], &numFeature, _preparsedData);
+    }
 
-    HIDP_VALUE_CAPS *const _outputButtons = &_inputButtons[numInput];
-    HidP_GetValueCaps(HidP_Output, _outputButtons, &numOutput, _preparsedData);
+    if (numInput > 0) {
+	HidP_GetValueCaps(HidP_Input, &buffer[numFeature], &numInput, _preparsedData);
+    }
+
+    if (numOutput > 0) {
+	HidP_GetValueCaps(HidP_Output, &buffer[numFeature + numInput], &numOutput, _preparsedData);
+    }
 
     // Update the array length in case HidP_GetButtonCaps() returned different lengths
     numberOfCaps = numFeature + numInput + numOutput;
@@ -283,7 +324,7 @@ void HID::win32::device_type::value_elements(elements_type& _values)
 	// If the item is a range, generate elements for each member
 	if( buffer[i].IsRange )
 	{
-	    for(unsigned j=buffer[i].Range.DataIndexMin; j < buffer[i].Range.DataIndexMax; ++j)
+	    for(unsigned j=buffer[i].Range.DataIndexMin; j <= buffer[i].Range.DataIndexMax; ++j)
 	    {
 		element_type *const element = new HID::win32::value_type(buffer[i], j, this);
 		if( element )
@@ -316,18 +357,22 @@ HID::elements_type& HID::win32::device_type::elements()
       		the link collections be at the beginning of the temp container
       		and in the same order returned by HidP_GetLinkCollectionNodes()	*/
     unsigned long length = _capabilities->NumberLinkCollectionNodes;
-    HIDP_LINK_COLLECTION_NODE nodes[length];
-    HidP_GetLinkCollectionNodes(nodes, &length, _preparsedData);
+    std::vector<HIDP_LINK_COLLECTION_NODE> nodes(length);
+    HidP_GetLinkCollectionNodes(&nodes[0], &length, _preparsedData);
     for(size_t i=0; i < length; ++i)
     {
 	element_type *const collection = new collection_type(nodes[i], this);
 
 	// Everything goes into the temporary container
 	temp.push_back(collection);
-
-	// Add top-level nodes to the _elements container
-	if( 0 == nodes[i].Parent )
-	    _elements.push_back(collection);
+    }
+    if (length > 0)
+    {
+	/* The top-level collections were divided into different physical device object (PDO) in Windows
+	   (see: http://msdn.microsoft.com/en-us/library/windows/hardware/ff543475(v=vs.85).aspx). 
+	   Therefore, there is only one top-level collection, others are sub-collections. */
+	_elements.push_back(temp[0]);
+	link_subcollections(temp, nodes);
     }
 
     // Get the button elements
@@ -336,16 +381,12 @@ HID::elements_type& HID::win32::device_type::elements()
     // Get the value elements
     value_elements(temp);
 
-    // Walk the temporary container and reparent anything that has a parent
-    elements_type::iterator i = temp.begin();
-    for(; i != temp.end(); ++i)
-    {
-	const unsigned parent = static_cast<win32::element_type*>(*i)->parentCollectionIndex();
-	if( (parent < length) && (parent || !(*i)->isCollection()) )
-	    temp[parent]->children().push_back(*i);
-
-	if( (((*i)->isCollection() && parent) || parent) && (parent < length) )
-	    temp[parent]->children().push_back(*i);
+    // Walk the temporary container and reparent anything that has a parent (skip collections)
+    elements_type::iterator it = temp.begin() + length;
+    for(; it != temp.end(); ++it) {
+	const unsigned parent = static_cast<win32::element_type*>(*it)->parentCollectionIndex();
+	if (parent < length)
+	    temp[parent]->children().push_back(*it);
     }
 
     return _elements;
@@ -363,7 +404,7 @@ bool HID::win32::device_type::feature(unsigned reportID, buffer_type& report)
 
     HidP_InitializeReportForID(HidP_Feature, reportID, preparsedData(), (char*)b, length);
     std::copy(report.begin(), report.end(), b+1);
-    return HidD_SetFeature(handle, b, report.size()+1);
+    return HidD_SetFeature(handle, b, report.size()+1) != FALSE;
 }
 
 HID::buffer_type HID::win32::device_type::feature(unsigned reportID)
@@ -399,7 +440,7 @@ bool HID::win32::device_type::output(unsigned reportID, buffer_type& report)
     HidP_InitializeReportForID(HidP_Output, reportID, preparsedData(), (char*)b, length);
     std::copy(report.begin(), report.end(), b+1);
 
-    return HidD_SetOutputReport(handle, b, length);
+    return HidD_SetOutputReport(handle, b, length) != FALSE;
 }
 
 const std::string& HID::win32::device_type::manufacturer()
@@ -460,4 +501,25 @@ uint16_t HID::win32::device_type::usagePage()
     if( !capabilities() )
 	return 0;
     return capabilities()->UsagePage;
+}
+
+void HID::win32::device_type::link_subcollections(elements_type& elements, std::vector<HIDP_LINK_COLLECTION_NODE>& nodes, size_t index)
+{
+    /* refer: http://msdn.microsoft.com/en-us/library/windows/hardware/ff542355(v=vs.85).aspx#ddk_link_collection_array_kg. */
+    const size_t firstChild = nodes[index].FirstChild;
+    if (firstChild <= 0)
+	return;
+
+    if (nodes[firstChild].FirstChild > 0)
+	link_subcollections(elements, nodes, firstChild);
+    elements[index]->children().push_back(elements[firstChild]);
+    for (HIDP_LINK_COLLECTION_NODE* node = &nodes[nodes[index].FirstChild];
+	node->NextSibling > 0;
+	node = &nodes[node->NextSibling])
+    {
+	const size_t nextSibling = node->NextSibling;
+	if (nodes[nextSibling].FirstChild > 0)
+	    link_subcollections(elements, nodes, nextSibling);
+	elements[index]->children().push_back(elements[nextSibling]);
+    }
 }
